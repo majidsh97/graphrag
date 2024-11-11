@@ -8,10 +8,11 @@ import logging
 import time
 import traceback
 from collections.abc import AsyncIterable
+from pathlib import Path
 from typing import cast
 
 import pandas as pd
-from datashaper import WorkflowCallbacks
+from datashaper import NoopVerbCallbacks, WorkflowCallbacks
 
 from graphrag.callbacks.console_workflow_callbacks import ConsoleWorkflowCallbacks
 from graphrag.index.cache import PipelineCache
@@ -32,8 +33,8 @@ from graphrag.index.run.utils import (
     _apply_substitutions,
     _create_input,
     _create_reporter,
-    _create_run_context,
     _validate_dataset,
+    create_run_context,
 )
 from graphrag.index.run.workflow import (
     _create_callback_chain,
@@ -41,9 +42,10 @@ from graphrag.index.run.workflow import (
 )
 from graphrag.index.storage import PipelineStorage
 from graphrag.index.typing import PipelineRunResult
-
-# Register all verbs
-from graphrag.index.update.dataframes import get_delta_docs, update_dataframe_outputs
+from graphrag.index.update.incremental_index import (
+    get_delta_docs,
+    update_dataframe_outputs,
+)
 from graphrag.index.workflows import (
     VerbDefinitions,
     WorkflowDefinitions,
@@ -63,6 +65,7 @@ async def run_pipeline_with_config(
     workflows: list[PipelineWorkflowReference] | None = None,
     dataset: pd.DataFrame | None = None,
     storage: PipelineStorage | None = None,
+    update_index_storage: PipelineStorage | None = None,
     cache: PipelineCache | None = None,
     callbacks: WorkflowCallbacks | None = None,
     progress_reporter: ProgressReporter | None = None,
@@ -103,7 +106,13 @@ async def run_pipeline_with_config(
     root_dir = config.root_dir or ""
 
     progress_reporter = progress_reporter or NullProgressReporter()
-    storage = storage or _create_storage(config.storage, root_dir=root_dir)
+    storage = storage or _create_storage(config.storage, root_dir=Path(root_dir))
+
+    if is_update_run:
+        update_index_storage = update_index_storage or _create_storage(
+            config.update_index_storage, root_dir=Path(root_dir)
+        )
+
     cache = cache or _create_cache(config.cache, root_dir)
     callbacks = callbacks or _create_reporter(config.reporting, root_dir)
     dataset = (
@@ -121,10 +130,15 @@ async def run_pipeline_with_config(
         msg = "No dataset provided!"
         raise ValueError(msg)
 
-    if is_update_run:
+    if is_update_run and update_index_storage:
         delta_dataset = await get_delta_docs(dataset, storage)
 
-        delta_storage = storage.child("delta")
+        # Fail on empty delta dataset
+        if delta_dataset.new_inputs.empty:
+            error_msg = "Incremental Indexing Error: No new documents to process."
+            raise ValueError(error_msg)
+
+        delta_storage = update_index_storage.child("delta")
 
         # Run the pipeline on the new documents
         tables_dict = {}
@@ -144,7 +158,16 @@ async def run_pipeline_with_config(
         ):
             tables_dict[table.workflow] = table.result
 
-        await update_dataframe_outputs(tables_dict, storage)
+        progress_reporter.success("Finished running workflows on new documents.")
+        await update_dataframe_outputs(
+            dataframe_dict=tables_dict,
+            storage=storage,
+            update_storage=update_index_storage,
+            config=config,
+            cache=cache,
+            callbacks=NoopVerbCallbacks(),
+            progress_reporter=progress_reporter,
+        )
 
     else:
         async for table in run_pipeline(
@@ -200,7 +223,7 @@ async def run_pipeline(
     """
     start_time = time.time()
 
-    context = _create_run_context(storage=storage, cache=cache, stats=None)
+    context = create_run_context(storage=storage, cache=cache, stats=None)
 
     progress_reporter = progress_reporter or NullProgressReporter()
     callbacks = callbacks or ConsoleWorkflowCallbacks()

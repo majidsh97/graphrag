@@ -2,12 +2,20 @@ name: Python Notebook Tests
 on:
   push:
     branches:
-      - "**/main" # Matches branches like feature/main
-      - "main" # Matches the main branch
+      - "**/main" # match branches like feature/main
+      - "main"    # match the main branch
   pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
     branches:
       - "**/main"
       - "main"
+    paths-ignore:
+      - "**/*.md"
+      - ".semversioner/**"
 
 permissions:
   contents: read
@@ -23,6 +31,8 @@ env:
 
 jobs:
   python-ci:
+    # skip draft PRs
+    if: github.event.pull_request.draft == false
     strategy:
       matrix:
         python-version: ["3.10"]

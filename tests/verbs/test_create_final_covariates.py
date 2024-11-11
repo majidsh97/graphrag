@@ -6,6 +6,7 @@ from datashaper.errors import VerbParallelizationError
 from pandas.testing import assert_series_equal
 
 from graphrag.config.enums import LLMType
+from graphrag.index.run.utils import create_run_context
 from graphrag.index.workflows.v1.create_final_covariates import (
     build_steps,
     workflow_name,
@@ -31,6 +32,11 @@ async def test_create_final_covariates():
     input_tables = load_input_tables(["workflow:create_base_text_units"])
     expected = load_expected(workflow_name)
 
+    context = create_run_context(None, None, None)
+    await context.runtime_storage.set(
+        "base_text_units", input_tables["workflow:create_base_text_units"]
+    )
+
     config = get_config_for_workflow(workflow_name)
 
     config["claim_extract"]["strategy"]["llm"] = MOCK_LLM_CONFIG
@@ -42,11 +48,12 @@ async def test_create_final_covariates():
         {
             "steps": steps,
         },
+        context,
     )
 
     input = input_tables["workflow:create_base_text_units"]
-    # we removed the subject_type and object_type columns so expect two less columns than the pre-refactor outputs
-    assert len(actual.columns) == (len(expected.columns) - 2)
+
+    assert len(actual.columns) == len(expected.columns)
     # our mock only returns one covariate per text unit, so that's a 1:1 mapping versus the LLM-extracted content in the test data
     assert len(actual) == len(input)
 
@@ -81,6 +88,11 @@ async def test_create_final_covariates():
 async def test_create_final_covariates_missing_llm_throws():
     input_tables = load_input_tables(["workflow:create_base_text_units"])
 
+    context = create_run_context(None, None, None)
+    await context.runtime_storage.set(
+        "base_text_units", input_tables["workflow:create_base_text_units"]
+    )
+
     config = get_config_for_workflow(workflow_name)
 
     del config["claim_extract"]["strategy"]["llm"]
@@ -93,4 +105,5 @@ async def test_create_final_covariates_missing_llm_throws():
             {
                 "steps": steps,
             },
+            context,
         )
