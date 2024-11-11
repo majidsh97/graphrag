@@ -50,6 +50,7 @@ MOCK_LLM_SUMMARIZATION_CONFIG = {
 
 
 async def test_create_base_entity_graph():
+    
     input_tables = load_input_tables([
         "workflow:create_base_text_units",
     ])

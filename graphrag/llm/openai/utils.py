@@ -3,7 +3,7 @@
 
 """Utility functions for the OpenAI API."""
 
-import json
+import json_repair as json
 import logging
 import re
 from collections.abc import Callable

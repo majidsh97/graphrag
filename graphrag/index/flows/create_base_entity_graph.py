@@ -47,6 +47,15 @@ async def create_base_entity_graph(
 ) -> pd.DataFrame:
     """All the steps to create the base entity graph."""
     # this returns a graph for each text unit, to be merged later
+    
+    from colorama import Fore,init
+    def warning(str):
+        print(f"{Fore.RED}{str}{Fore.RESET}")
+        
+    warning(cache)
+    
+    
+    
     entities, entity_graphs = await extract_entities(
         text_units,
         callbacks,

@@ -20,6 +20,11 @@ from graphrag.llm import CompletionLLM
 
 from .prompts import CONTINUE_PROMPT, GRAPH_EXTRACTION_PROMPT, LOOP_PROMPT
 
+#---------------------------------- my coede ----------------------------------#
+from .entity_seed import pipeline, get_matched_entity
+#---------------------------------- my coede ----------------------------------#
+
+
 DEFAULT_TUPLE_DELIMITER = "<|>"
 DEFAULT_RECORD_DELIMITER = "##"
 DEFAULT_COMPLETION_DELIMITER = "<|COMPLETE|>"
@@ -90,6 +95,9 @@ class GraphExtractor:
         yes = encoding.encode("YES")
         no = encoding.encode("NO")
         self._loop_args = {"logit_bias": {yes[0]: 100, no[0]: 100}, "max_tokens": 1}
+        
+        
+        
 
     async def __call__(
         self, texts: list[str], prompt_variables: dict[str, Any] | None = None
@@ -116,9 +124,15 @@ class GraphExtractor:
             ),
         }
 
+        #---------------------------------- my coede ----------------------------------#
+        self.entity_seed = pipeline(texts) 
+        #---------------------------------- my coede ----------------------------------#
         for doc_index, text in enumerate(texts):
             try:
                 # Invoke the entity extraction
+                #---------------------------------- my coede ----------------------------------#
+                prompt_variables['entity_seed'] = f'{self._tuple_delimiter_key}'.join(get_matched_entity(text,self.entity_seed))
+                #---------------------------------- my coede ----------------------------------#
                 result = await self._process_document(text, prompt_variables)
                 source_doc_map[doc_index] = text
                 all_records[doc_index] = result

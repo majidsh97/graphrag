@@ -12,10 +12,11 @@ from .cli import index_cli
 from .emit.types import TableEmitterType
 
 if __name__ == "__main__":
+    
     parser = argparse.ArgumentParser(
         prog="python -m graphrag.index",
         description="The graphrag indexing engine",
-    )
+    )    
     parser.add_argument(
         "--config",
         help="The configuration yaml file to use when running the indexing pipeline",
@@ -100,6 +101,7 @@ if __name__ == "__main__":
     if args.resume and args.update_index:
         msg = "Cannot resume and update a run at the same time"
         raise ValueError(msg)
+    
 
     index_cli(
         root_dir=args.root,

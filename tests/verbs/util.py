@@ -17,7 +17,7 @@ from graphrag.index.storage.typing import PipelineStorage
 
 pd.set_option("display.max_columns", None)
 
-
+path = '/home/cip/ce/ix05ogym/Majid/LLM/graphrag/graphrag/'
 def load_input_tables(inputs: list[str]) -> dict[str, pd.DataFrame]:
     """Harvest all the referenced input IDs from the workflow being tested and pass them here."""
     # stick all the inputs in a map - Workflow looks them up by name
@@ -26,21 +26,21 @@ def load_input_tables(inputs: list[str]) -> dict[str, pd.DataFrame]:
     # all workflows implicitly receive the `input` source, which is formatted as a dataframe after loading from storage
     # we'll simulate that by just loading one of our output parquets and converting back to equivalent dataframe
     # so we aren't dealing with storage vagaries (which would become an integration test)
-    source = pd.read_parquet("tests/verbs/data/create_final_documents.parquet")
+    source = pd.read_parquet(path+"tests/verbs/data/create_final_documents.parquet")
     source.rename(columns={"raw_content": "text"}, inplace=True)
     input_tables["source"] = cast(pd.DataFrame, source[["id", "text", "title"]])
 
     for input in inputs:
         # remove the workflow: prefix if it exists, because that is not part of the actual table filename
         name = input.replace("workflow:", "")
-        input_tables[input] = pd.read_parquet(f"tests/verbs/data/{name}.parquet")
+        input_tables[input] = pd.read_parquet(path+f"tests/verbs/data/{name}.parquet")
 
     return input_tables
 
 
 def load_expected(output: str) -> pd.DataFrame:
     """Pass in the workflow output (generally the workflow name)"""
-    return pd.read_parquet(f"tests/verbs/data/{output}.parquet")
+    return pd.read_parquet(path + f"tests/verbs/data/{output}.parquet")
 
 
 def get_config_for_workflow(name: str) -> PipelineWorkflowConfig:
