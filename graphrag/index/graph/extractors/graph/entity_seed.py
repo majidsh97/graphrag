@@ -68,11 +68,7 @@ def get_matched_entity(text,entity_seed):
 
 def pipeline(texts):
     entity_seed = get_entity_seed(texts)
-<<<<<<< HEAD
     entity_seed = clean_entity_seed(entity_seed)
-=======
-    #entity_seed = clean_entity_seed(entity_seed)
->>>>>>> 002a077 (entity seed)
     entity_seed = pd.DataFrame(entity_seed.items(), columns=["entity", "count"])
     entity_seed.to_parquet("entity_seed.parquet")
     
