@@ -10,6 +10,7 @@ from datashaper import (
     AsyncType,
     Table,
     VerbCallbacks,
+    VerbInput,
     verb,
 )
 from datashaper.table_store.types import VerbResult, create_verb_result
@@ -26,10 +27,10 @@ from graphrag.index.storage import PipelineStorage
     treats_input_tables_as_immutable=True,
 )
 async def create_base_entity_graph(
+    input: VerbInput,
     callbacks: VerbCallbacks,
     cache: PipelineCache,
     storage: PipelineStorage,
-    runtime_storage: PipelineStorage,
     text_column: str,
     id_column: str,
     clustering_strategy: dict[str, Any],
@@ -42,16 +43,15 @@ async def create_base_entity_graph(
     summarization_strategy: dict[str, Any] | None = None,
     summarization_num_threads: int = 4,
     embedding_strategy: dict[str, Any] | None = None,
-    snapshot_graphml_enabled: bool = False,
-    snapshot_raw_entities_enabled: bool = False,
-    snapshot_transient_enabled: bool = False,
+    graphml_snapshot_enabled: bool = False,
+    raw_entity_snapshot_enabled: bool = False,
     **_kwargs: dict,
 ) -> VerbResult:
     """All the steps to create the base entity graph."""
-    text_units = await runtime_storage.get("base_text_units")
+    source = cast(pd.DataFrame, input.get_input())
 
     output = await create_base_entity_graph_flow(
-        text_units,
+        source,
         callbacks,
         cache,
         storage,
@@ -67,11 +67,8 @@ async def create_base_entity_graph(
         summarization_strategy=summarization_strategy,
         summarization_num_threads=summarization_num_threads,
         embedding_strategy=embedding_strategy,
-        snapshot_graphml_enabled=snapshot_graphml_enabled,
-        snapshot_raw_entities_enabled=snapshot_raw_entities_enabled,
-        snapshot_transient_enabled=snapshot_transient_enabled,
+        graphml_snapshot_enabled=graphml_snapshot_enabled,
+        raw_entity_snapshot_enabled=raw_entity_snapshot_enabled,
     )
 
-    await runtime_storage.set("base_entity_graph", output)
-
-    return create_verb_result(cast(Table, pd.DataFrame()))
+    return create_verb_result(cast(Table, output))

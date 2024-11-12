@@ -1,7 +1,6 @@
 # Copyright (c) 2024 Microsoft Corporation.
 # Licensed under the MIT License
 
-from graphrag.index.run.utils import create_run_context
 from graphrag.index.workflows.v1.create_final_communities import (
     build_steps,
     workflow_name,
@@ -21,11 +20,6 @@ async def test_create_final_communities():
     ])
     expected = load_expected(workflow_name)
 
-    context = create_run_context(None, None, None)
-    await context.runtime_storage.set(
-        "base_entity_graph", input_tables["workflow:create_base_entity_graph"]
-    )
-
     steps = build_steps({})
 
     actual = await get_workflow_output(
@@ -33,14 +27,9 @@ async def test_create_final_communities():
         {
             "steps": steps,
         },
-        context=context,
     )
 
-    # ignore the period column, because it is recalculated every time
-    columns = list(expected.columns.values)
-    columns.remove("period")
+    # we removed the raw_community column, so expect one less in the output
     compare_outputs(
-        actual,
-        expected,
-        columns=columns,
+        actual, expected, ["id", "title", "level", "relationship_ids", "text_unit_ids"]
     )

@@ -42,9 +42,8 @@ async def create_base_entity_graph(
     summarization_strategy: dict[str, Any] | None = None,
     summarization_num_threads: int = 4,
     embedding_strategy: dict[str, Any] | None = None,
-    snapshot_graphml_enabled: bool = False,
-    snapshot_raw_entities_enabled: bool = False,
-    snapshot_transient_enabled: bool = False,
+    graphml_snapshot_enabled: bool = False,
+    raw_entity_snapshot_enabled: bool = False,
 ) -> pd.DataFrame:
     """All the steps to create the base entity graph."""
     # this returns a graph for each text unit, to be merged later
@@ -102,7 +101,7 @@ async def create_base_entity_graph(
             strategy=embedding_strategy,
         )
 
-    if snapshot_raw_entities_enabled:
+    if raw_entity_snapshot_enabled:
         await snapshot(
             entities,
             name="raw_extracted_entities",
@@ -110,7 +109,7 @@ async def create_base_entity_graph(
             formats=["json"],
         )
 
-    if snapshot_graphml_enabled:
+    if graphml_snapshot_enabled:
         await snapshot_graphml(
             merged_graph,
             name="merged_graph",
@@ -141,14 +140,4 @@ async def create_base_entity_graph(
     if embedding_strategy:
         final_columns.append("embeddings")
 
-    output = cast(pd.DataFrame, clustered[final_columns])
-
-    if snapshot_transient_enabled:
-        await snapshot(
-            output,
-            name="create_base_entity_graph",
-            storage=storage,
-            formats=["parquet"],
-        )
-
-    return output
+    return cast(pd.DataFrame, clustered[final_columns])

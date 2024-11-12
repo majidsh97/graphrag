@@ -21,7 +21,7 @@ workflows:
 
   - name: create_base_entity_graph
     config:
-      snapshot_graphml_enabled: True
+      graphml_snapshot: True
       embed_graph_enabled: True
       entity_extract:
         strategy:

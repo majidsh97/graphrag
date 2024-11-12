@@ -5,25 +5,23 @@
         "create_base_text_units": {
             "row_range": [
                 1,
-                2500
+                2000
             ],
             "subworkflows": 1,
-            "max_runtime": 150,
-            "expected_artifacts": 0
+            "max_runtime": 10
         },
         "create_base_entity_graph": {
             "row_range": [
                 1,
-                2500
+                2000
             ],
             "subworkflows": 1,
-            "max_runtime": 300,
-            "expected_artifacts": 0
+            "max_runtime": 300
         },
         "create_final_entities": {
             "row_range": [
                 1,
-                2500
+                2000
             ],
             "nan_allowed_columns": [
                 "type",
@@ -31,22 +29,20 @@
                 "graph_embedding"
             ],
             "subworkflows": 1,
-            "max_runtime": 300,
-            "expected_artifacts": 1
+            "max_runtime": 300
         },
         "create_final_relationships": {
             "row_range": [
                 1,
-                6000
+                2000
             ],
             "subworkflows": 1,
-            "max_runtime": 150,
-            "expected_artifacts": 1
+            "max_runtime": 100
         },
         "create_final_nodes": {
             "row_range": [
                 1,
-                2500
+                2000
             ],
             "nan_allowed_columns": [
                 "entity_type",
@@ -56,22 +52,20 @@
                 "level"
             ],
             "subworkflows": 1,
-            "max_runtime": 150,
-            "expected_artifacts": 1
+            "max_runtime": 10
         },
         "create_final_communities": {
             "row_range": [
                 1,
-                2500
+                2000
             ],
             "subworkflows": 1,
-            "max_runtime": 150,
-            "expected_artifacts": 1
+            "max_runtime": 10
         },
         "create_final_community_reports": {
             "row_range": [
                 1,
-                2500
+                2000
             ],
             "nan_allowed_columns": [
                 "community_id",
@@ -84,39 +78,27 @@
                 "findings"
             ],
             "subworkflows": 1,
-            "max_runtime": 300,
-            "expected_artifacts": 1
+            "max_runtime": 300
         },
         "create_final_text_units": {
             "row_range": [
                 1,
-                2500
+                2000
             ],
             "nan_allowed_columns": [
                 "relationship_ids",
                 "entity_ids"
             ],
             "subworkflows": 1,
-            "max_runtime": 150,
-            "expected_artifacts": 1
+            "max_runtime": 100
         },
         "create_final_documents": {
             "row_range": [
                 1,
-                2500
+                2000
             ],
             "subworkflows": 1,
-            "max_runtime": 150,
-            "expected_artifacts": 1
-        },
-        "generate_text_embeddings": {
-            "row_range": [
-                1,
-                2500
-            ],
-            "subworkflows": 1,
-            "max_runtime": 150,
-            "expected_artifacts": 1
+            "max_runtime": 100
         }
     },
     "query_config": [

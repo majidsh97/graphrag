@@ -29,7 +29,7 @@ DEFAULT_LLM_PARAMS = {
 log = logging.getLogger(__name__)
 
 
-class LocalSearch(BaseSearch[LocalContextBuilder]):
+class LocalSearch(BaseSearch):
     """Search orchestration for local search mode."""
 
     def __init__(
@@ -72,17 +72,9 @@ class LocalSearch(BaseSearch[LocalContextBuilder]):
         )
         log.info("GENERATE ANSWER: %s. QUERY: %s", start_time, query)
         try:
-            if "drift_query" in kwargs:
-                drift_query = kwargs["drift_query"]
-                search_prompt = self.system_prompt.format(
-                    context_data=context_text,
-                    response_type=self.response_type,
-                    global_query=drift_query,
-                )
-            else:
-                search_prompt = self.system_prompt.format(
-                    context_data=context_text, response_type=self.response_type
-                )
+            search_prompt = self.system_prompt.format(
+                context_data=context_text, response_type=self.response_type
+            )
             search_messages = [
                 {"role": "system", "content": search_prompt},
                 {"role": "user", "content": query},

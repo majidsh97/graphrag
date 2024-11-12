@@ -6,7 +6,7 @@
 from enum import Enum
 
 
-class DocSelectionType(str, Enum):
+class DocSelectionType(Enum):
     """The type of document selection to use."""
 
     ALL = "all"

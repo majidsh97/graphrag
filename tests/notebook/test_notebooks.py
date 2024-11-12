@@ -29,7 +29,7 @@ def _notebook_run(filepath: Path):
         "-y",
         "--no-prompt",
         "--stdout",
-        str(filepath.absolute().resolve()),
+        filepath.absolute().as_posix(),
     ]
     notebook = subprocess.check_output(args)
     nb = nbformat.reads(notebook, nbformat.current_nbformat)

@@ -33,7 +33,7 @@ from graphrag.index.config.storage import (
 from graphrag.index.context import PipelineRunContext, PipelineRunStats
 from graphrag.index.input import load_input
 from graphrag.index.storage.memory_pipeline_storage import MemoryPipelineStorage
-from graphrag.index.storage.pipeline_storage import PipelineStorage
+from graphrag.index.storage.typing import PipelineStorage
 from graphrag.logging import ProgressReporter
 
 log = logging.getLogger(__name__)
@@ -83,17 +83,6 @@ def _apply_substitutions(config: PipelineConfig, run_id: str) -> PipelineConfig:
             substitutions
         )
     if (
-        config.update_index_storage
-        and isinstance(
-            config.update_index_storage,
-            PipelineFileStorageConfig | PipelineBlobStorageConfig,
-        )
-        and config.update_index_storage.base_dir
-    ):
-        config.update_index_storage.base_dir = Template(
-            config.update_index_storage.base_dir
-        ).substitute(substitutions)
-    if (
         isinstance(config.cache, PipelineFileCacheConfig | PipelineBlobCacheConfig)
         and config.cache.base_dir
     ):
@@ -114,7 +103,7 @@ def _apply_substitutions(config: PipelineConfig, run_id: str) -> PipelineConfig:
     return config
 
 
-def create_run_context(
+def _create_run_context(
     storage: PipelineStorage | None,
     cache: PipelineCache | None,
     stats: PipelineRunStats | None,
@@ -124,5 +113,4 @@ def create_run_context(
         stats=stats or PipelineRunStats(),
         cache=cache or InMemoryCache(),
         storage=storage or MemoryPipelineStorage(),
-        runtime_storage=MemoryPipelineStorage(),
     )

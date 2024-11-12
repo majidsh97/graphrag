@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Microsoft Corporation.
 # Licensed under the MIT License
 
-from graphrag.index.run.utils import create_run_context
+from graphrag.index.storage.memory_pipeline_storage import MemoryPipelineStorage
 from graphrag.index.workflows.v1.create_final_nodes import (
     build_steps,
     workflow_name,
@@ -22,10 +22,7 @@ async def test_create_final_nodes():
     ])
     expected = load_expected(workflow_name)
 
-    context = create_run_context(None, None, None)
-    await context.runtime_storage.set(
-        "base_entity_graph", input_tables["workflow:create_base_entity_graph"]
-    )
+    storage = MemoryPipelineStorage()
 
     config = get_config_for_workflow(workflow_name)
 
@@ -40,12 +37,12 @@ async def test_create_final_nodes():
         {
             "steps": steps,
         },
-        context=context,
+        storage=storage,
     )
 
     compare_outputs(actual, expected)
 
-    assert len(context.storage.keys()) == 0, "Storage should be empty"
+    assert len(storage.keys()) == 0, "Storage should be empty"
 
 
 async def test_create_final_nodes_with_snapshot():
@@ -54,10 +51,7 @@ async def test_create_final_nodes_with_snapshot():
     ])
     expected = load_expected(workflow_name)
 
-    context = create_run_context(None, None, None)
-    await context.runtime_storage.set(
-        "base_entity_graph", input_tables["workflow:create_base_entity_graph"]
-    )
+    storage = MemoryPipelineStorage()
 
     config = get_config_for_workflow(workflow_name)
 
@@ -73,11 +67,11 @@ async def test_create_final_nodes_with_snapshot():
         {
             "steps": steps,
         },
-        context=context,
+        storage=storage,
     )
 
     assert actual.shape == expected.shape, "Graph dataframe shapes differ"
 
-    assert context.storage.keys() == [
+    assert storage.keys() == [
         "top_level_nodes.json",
     ], "Graph snapshot keys differ"
